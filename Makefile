@@ -1,5 +1,11 @@
+CFLAGS = -Os
+RM := rm -rf
+CP := cp
 redirect_rewrite: redirect_rewrite.c urldecode.c
-	gcc -o redirect_rewrite -Os redirect_rewrite.c urldecode.c -I.
+	$(CC) -o $@ $(CFLAGS) redirect_rewrite.c urldecode.c -I.
 clean:
 	-$(RM) redirect_rewrite
 	-@echo 'Cleanup complete'
+install:
+	-$(CP) redirect_rewrite /usr/local/bin/redirect_rewrite
+	-@echo ''
