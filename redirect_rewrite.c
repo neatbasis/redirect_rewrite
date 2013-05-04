@@ -100,6 +100,7 @@ int main(int argc, char **argv) {
 				if(NULL != original_url){
 					url = match(original_url);
 				}
+				printf("%s ", channel);
 			}
 			if(NULL == url){
 				printf("\n");
