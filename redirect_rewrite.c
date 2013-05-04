@@ -51,7 +51,7 @@ int main(void) {
 		return EXIT_FAILURE;
 	}
 
-	while(1){
+	do{
 		/* Read line into contents */
 		if(readIn() == -1)
 			return EXIT_FAILURE;
@@ -73,7 +73,7 @@ int main(void) {
 			}
 		}
 		printf("%s \n", channel);
-	}
+	}while(is_ready(fileno(stdin)));
 
 	return EXIT_FAILURE;
 }
@@ -164,5 +164,16 @@ char* getParam(char *url, regex_t prm){
 		  }
 	}
 	return decoded;
+}
+
+unsigned int is_ready(int fd) {
+    fd_set fdset;
+    struct timeval timeout;
+    FD_ZERO(&fdset);
+    FD_SET(fd, &fdset);
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 1;
+    //int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout);
+    return select(fd+1, &fdset, NULL, NULL, &timeout) == 1 ? 1 : 0;
 }
 

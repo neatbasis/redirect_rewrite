@@ -12,6 +12,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <regex.h>
+#include <sys/select.h>
 #include "matcher.h"
 
 int main(void);
@@ -19,5 +20,6 @@ unsigned int readIn();
 void compile_patterns();
 char* match(char* url);
 char* getParam(char*, regex_t param);
+unsigned int is_ready(int fd);
 
 #endif /* REDIRECT_REWRITE_H_ */
