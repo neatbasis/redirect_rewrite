@@ -103,6 +103,7 @@ int main(int argc, char **argv) {
 					printf("%s 302:%s\n", channel, url);
 					fflush(stdout);
 					sprintf (buffer, "Redirecting: %s", url);
+					fprintf(stderr, "Redirecting: %s", url);
 					syslog(LOG_INFO, buffer);
 				}else{
 					printf("%s \n", channel);
@@ -116,7 +117,7 @@ int main(int argc, char **argv) {
 		memset (content,0,sizeof(char) * localAllocatedSize);
 	}
 	closelog();
-	return EXIT_FAILURE;
+	return EXIT_SUCCESS;
 }
 
 void compile_patterns(){
