@@ -20,10 +20,8 @@
 
 
 int main(int argc, char **argv);
-unsigned int readIn();
 void compile_patterns();
 char* match(char* url);
 char* getParam(char*, regex_t param);
-unsigned int is_ready(int fd);
 
 #endif /* REDIRECT_REWRITE_H_ */

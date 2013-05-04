@@ -54,12 +54,36 @@ int main(int argc, char **argv) {
 #endif
 		return EXIT_FAILURE;
 	}
+	unsigned int n = 0;
+	unsigned int localAllocatedSize, oldSize;
+	localAllocatedSize = allocatedSize;
 
-	do{
+	memset (content,0,sizeof(char) * localAllocatedSize);
+	int c;
+	while((c = fgetc(stdin)) != EOF){
+
+		if(n==localAllocatedSize){
+			oldSize = localAllocatedSize;
+			localAllocatedSize += INCR_SIZE;
+			allocatedSize = localAllocatedSize;
+			content = (char*) realloc(content, sizeof(char) * localAllocatedSize);
+			if (NULL == content) {
+				perror("Could not allocate memory");
+				exit(1);
+			}
+			if(oldSize<localAllocatedSize)
+				memset (content+oldSize,0,sizeof(char) * INCR_SIZE);
+		}
+
 		/* Read line into contents */
-		if(readIn() == -1)
-			return EXIT_FAILURE;
+		if (c != '\n'){
+			content[n] = c;
+			n++;
+			continue;
+		}
+		n=0;
 
+		//printf("[X]Content %s \n\n", content);
 
 		/* Grab the text up to the space character */
 		char* channel = strtok (content, " ");
@@ -71,62 +95,28 @@ int main(int argc, char **argv) {
 			if(NULL == original_url){
 				printf("%s \n", channel);
 				fflush(stdout);
-				continue;
+			}else{
+				char* url = match(original_url);
+
+				if(NULL != url){
+					char buffer[2048];
+					printf("%s 302:%s\n", channel, url);
+					fflush(stdout);
+					sprintf (buffer, "Redirecting: %s", url);
+					syslog(LOG_INFO, buffer);
+				}else{
+					printf("%s \n", channel);
+					fflush(stdout);
+				}
 			}
-			char* url = match(original_url);
-			if(NULL != url){
-				char buffer[2048];
-				printf("%s 302:%s\n", channel, url);
-				fflush(stdout);
-				sprintf (buffer, "Redirecting: %s", url);
-				syslog(LOG_INFO, buffer);
-				continue;
-			}
+
 		}else{
 			fprintf(stderr, "channel is null\n");
 		}
-		printf("%s \n", channel);
-		fflush(stdout);
-	}while(is_ready(fileno(stdin)));
+		memset (content,0,sizeof(char) * localAllocatedSize);
+	}
 	closelog();
 	return EXIT_FAILURE;
-}
-//#endif
-unsigned int readIn(){
-
-	int c;
-	unsigned int n = 0;
-	unsigned int localAllocatedSize, oldSize;
-	localAllocatedSize = allocatedSize;
-
-	memset (content,0,sizeof(char) * localAllocatedSize);
-	while(1) {
-		if(n==localAllocatedSize){
-			oldSize = localAllocatedSize;
-			localAllocatedSize += INCR_SIZE;
-			content = (char*) realloc(content, sizeof(char) * localAllocatedSize);
-			if (NULL == content) {
-				break;
-			}
-			if(oldSize<localAllocatedSize)
-				memset (content+oldSize,0,sizeof(char) * INCR_SIZE);
-		}
-
-		c = fgetc(stdin);
-
-		if (c != EOF && c != '\n'){
-			content[n] = c;
-			n++;
-		}else if(n>0){
-			allocatedSize = localAllocatedSize;
-			return n;
-		}
-	}
-	allocatedSize = localAllocatedSize;
-#ifdef DEBUG
-	perror("Could not allocate memory");
-#endif
-	return -1;
 }
 
 void compile_patterns(){
@@ -179,16 +169,4 @@ char* getParam(char *url, regex_t prm){
 	}
 	return decoded;
 }
-
-unsigned int is_ready(int fd) {
-    fd_set fdset;
-    struct timeval timeout;
-    FD_ZERO(&fdset);
-    FD_SET(fd, &fdset);
-    timeout.tv_sec = 0;
-    timeout.tv_usec = 1;
-    //int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout);
-    return select(fd+1, &fdset, NULL, NULL, &timeout) == 1 ? 1 : 0;
-}
-
 
