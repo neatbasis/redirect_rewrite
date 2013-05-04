@@ -38,7 +38,11 @@ matcher matchers[] = {
 
 #define NUM_MATCHERS sizeof matchers / sizeof matchers[0]
 //#ifndef DEBUG
+
 int main(int argc, char **argv) {
+
+	openlog("redirect_rewrite", LOG_PID|LOG_CONS, LOG_USER);
+
 	compile_patterns();
 	/* Allocate some memory */
 	content = (char*) malloc(sizeof(char) * BUF_SIZE);
@@ -71,8 +75,11 @@ int main(int argc, char **argv) {
 			}
 			char* url = match(original_url);
 			if(NULL != url){
+				char buffer[2048];
 				printf("%s 302:%s\n", channel, url);
 				fflush(stdout);
+				sprintf (buffer, "Redirecting: %s", url);
+				syslog(LOG_INFO, buffer);
 				continue;
 			}
 		}else{
@@ -81,7 +88,7 @@ int main(int argc, char **argv) {
 		printf("%s \n", channel);
 		fflush(stdout);
 	}while(is_ready(fileno(stdin)));
-
+	closelog();
 	return EXIT_FAILURE;
 }
 //#endif
