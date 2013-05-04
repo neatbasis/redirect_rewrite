@@ -88,31 +88,38 @@ int main(int argc, char **argv) {
 		/* Grab the text up to the space character */
 		char* channel = strtok (content, " ");
 
+		char* url;
 		if(channel != NULL){
+			url = match(channel);
+
 			/* Grab more text up to the next space character
 			 * and try to get a redirect url match */
-			char* original_url = strtok (NULL, " ");
-			if(NULL == original_url){
-				printf("%s \n", channel);
+			char* original_url;
+			if(NULL == url){
+				original_url = strtok (NULL, " ");
+				if(NULL != original_url){
+					url = match(original_url);
+				}
+			}
+			if(NULL == url){
+				printf("\n");
 				fflush(stdout);
 			}else{
-				char* url = match(original_url);
 
 				if(NULL != url){
 					char buffer[2048];
-					printf("%s 302:%s\n", channel, url);
+					printf("302:%s\n", url);
 					fflush(stdout);
 					sprintf (buffer, "Redirecting: %s", url);
-					fprintf(stderr, "Redirecting: %s", url);
 					syslog(LOG_INFO, buffer);
 				}else{
-					printf("%s \n", channel);
+					printf("\n");
 					fflush(stdout);
 				}
 			}
 
 		}else{
-			fprintf(stderr, "channel is null\n");
+			syslog(LOG_INFO, "No url found");
 		}
 		memset (content,0,sizeof(char) * localAllocatedSize);
 	}
@@ -170,4 +177,3 @@ char* getParam(char *url, regex_t prm){
 	}
 	return decoded;
 }
-
