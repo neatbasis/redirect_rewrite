@@ -13,9 +13,11 @@
 #include <stdlib.h>
 #include <regex.h>
 #include <sys/select.h>
+#include <unistd.h>
+#include <sys/types.h>
 #include "matcher.h"
 
-int main(void);
+int main(int argc, char **argv);
 unsigned int readIn();
 void compile_patterns();
 char* match(char* url);

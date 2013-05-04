@@ -14,7 +14,7 @@
 /* In case we do have to realloc, do it in increments of 512 bytes*/
 #define INCR_SIZE 512
 
-//#define DEBUG
+#define DEBUG
 
 unsigned int allocatedSize  = BUF_SIZE;
 char *content;
@@ -37,8 +37,8 @@ matcher matchers[] = {
 };
 
 #define NUM_MATCHERS sizeof matchers / sizeof matchers[0]
-
-int main(void) {
+//#ifndef DEBUG
+int main(int argc, char **argv) {
 	compile_patterns();
 	/* Allocate some memory */
 	content = (char*) malloc(sizeof(char) * BUF_SIZE);
@@ -56,28 +56,35 @@ int main(void) {
 		if(readIn() == -1)
 			return EXIT_FAILURE;
 
+
 		/* Grab the text up to the space character */
-		char* channel = strtok (content," ");
+		char* channel = strtok (content, " ");
+
 		if(channel != NULL){
 			/* Grab more text up to the next space character
 			 * and try to get a redirect url match */
-			char* original_url = strtok (content," ");
+			char* original_url = strtok (NULL, " ");
 			if(NULL == original_url){
 				printf("%s \n", channel);
+				fflush(stdout);
 				continue;
 			}
 			char* url = match(original_url);
 			if(NULL != url){
 				printf("%s 302:%s\n", channel, url);
+				fflush(stdout);
 				continue;
 			}
+		}else{
+			fprintf(stderr, "channel is null\n");
 		}
 		printf("%s \n", channel);
+		fflush(stdout);
 	}while(is_ready(fileno(stdin)));
 
 	return EXIT_FAILURE;
 }
-
+//#endif
 unsigned int readIn(){
 
 	int c;
@@ -100,10 +107,10 @@ unsigned int readIn(){
 
 		c = fgetc(stdin);
 
-		if (c != '\n'){
+		if (c != EOF && c != '\n'){
 			content[n] = c;
 			n++;
-		}else{
+		}else if(n>0){
 			allocatedSize = localAllocatedSize;
 			return n;
 		}
@@ -176,4 +183,5 @@ unsigned int is_ready(int fd) {
     //int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout);
     return select(fd+1, &fdset, NULL, NULL, &timeout) == 1 ? 1 : 0;
 }
+
 
