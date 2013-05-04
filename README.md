@@ -12,4 +12,11 @@ Build it like this:
 ```bash
 make
 ```
+Copy redirect_rewrite somewhere like /usr/local/bin/
+
+Modify your squid.conf to contain the path of the executable
+
+```bash
+url_rewrite_program /path/to/redirect_rewrite
+```
 
