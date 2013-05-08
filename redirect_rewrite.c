@@ -169,7 +169,7 @@ char* getParam(char *url, regex_t prm){
 	decoded = NULL;
 
 	if(!regexec(&prm, url, maxGroups, cm, 0)){
-		  if (cm[1].rm_so != (size_t)-1){
+		  if ((int)cm[1].rm_so != (int)-1){
 			  char sourceCopy[strlen(url) + 1];
 			  strcpy(sourceCopy, url);
 			  sourceCopy[cm[1].rm_eo] = 0;
